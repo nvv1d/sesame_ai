@@ -3,10 +3,55 @@
 <head>
   <meta charset="utf-8"/>
   <title>Sesame Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    #btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      width: 200px;
+      height: 60px;
+      transition: background-color 0.3s;
+    }
+    #btn:hover {
+      background-color: #45a049;
+    }
+    #btn:active {
+      background-color: #3e8e41;
+    }
+    #btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 20px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <h1>Talk to Maya</h1>
   <button id="btn">Hold to Talk</button>
-  <script src="client.js"></script>
+  <p id="status">Initializing...</p>
+  
+  <script src="/client.js"></script>
 </body>
 </html>
