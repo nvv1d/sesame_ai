@@ -257,6 +257,7 @@ function setupButton() {
     e.preventDefault();
     button.dispatchEvent(new Event('mouseup'));
   });
+} // Added missing closing bracket for setupButton function
 
 // Initialize everything when the page loads
 window.addEventListener('DOMContentLoaded', async () => {
