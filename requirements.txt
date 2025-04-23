@@ -8,3 +8,8 @@ PyAudio>=0.2.11
 pytest>=6.0.0
 black>=21.5b2
 flake8>=3.9.0
+
+fastapi
+uvicorn[standard]
+sesame_ai @ git+https://github.com/nvv1d/sesame_ai.git
+python-multipart
