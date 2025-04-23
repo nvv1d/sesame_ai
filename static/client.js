@@ -4,6 +4,7 @@ const BUFFER_SIZE = 4096;
 
 // Connect to WebSocket endpoint on our server
 const WS_URL = window.location.origin.replace('http', 'ws') + '/ws/';
+console.log('Connecting to WebSocket at:', WS_URL);
 let socket;
 let audioContext;
 let mediaStream;
@@ -12,21 +13,27 @@ let button = document.getElementById('btn');
 
 // Connect to the WebSocket and set up listeners
 function setupWebSocket() {
+  let statusElement = document.getElementById('status');
+  statusElement.textContent = "Connecting...";
+  
   socket = new WebSocket(WS_URL);
   
   socket.onopen = () => {
     console.log('WebSocket connected!');
+    statusElement.textContent = "Connected! Ready to talk to Maya.";
     button.disabled = false;
   };
   
   socket.onclose = () => {
     console.log('WebSocket closed');
+    statusElement.textContent = "Connection lost. Reconnecting...";
     button.disabled = true;
     setTimeout(setupWebSocket, 2000); // Try to reconnect after 2 seconds
   };
   
   socket.onerror = (error) => {
     console.error('WebSocket error:', error);
+    statusElement.textContent = "Connection error. Please check your network.";
   };
   
   // Handle incoming audio data from the server
