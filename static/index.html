@@ -10,12 +10,13 @@
       margin: 0 auto;
       padding: 20px;
       text-align: center;
+      background-color: #f5f5f5;
     }
     h1 {
       color: #333;
       margin-bottom: 30px;
     }
-    #btn {
+    .btn {
       background-color: #4CAF50;
       border: none;
       color: white;
@@ -26,32 +27,297 @@
       font-size: 16px;
       margin: 4px 2px;
       cursor: pointer;
-      border-radius: 8px;
-      width: 200px;
-      height: 60px;
-      transition: background-color 0.3s;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    #btn:hover {
+    .btn:hover {
       background-color: #45a049;
+      transform: scale(1.05);
     }
-    #btn:active {
+    .btn:active {
       background-color: #3e8e41;
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    #btn:disabled {
+    .btn:disabled {
       background-color: #cccccc;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-container {
+      position: relative;
+      margin: 30px auto;
+      width: 120px;
+      height: 120px;
+    }
+    .pulse {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+      animation: pulse 1.5s infinite;
+      opacity: 0;
+      transform: scale(1);
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.7;
+      }
+      70% {
+        transform: scale(1.3);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.3);
+        opacity: 0;
+      }
+    }
+    .listening .pulse {
+      animation: pulse 1.5s infinite;
+      opacity: 0.7;
+    }
+    .listening #btn {
+      background-color: #f44336;
     }
     #status {
       margin-top: 20px;
       color: #666;
+      font-size: 16px;
+    }
+    #audio-indicators {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      height: 50px;
+    }
+    .indicator {
+      width: 5px;
+      height: 20px;
+      background-color: #4CAF50;
+      margin: 0 2px;
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+    .speaking .indicator {
+      animation: equalize 0.8s infinite;
+    }
+    @keyframes equalize {
+      0% { height: 20px; }
+      50% { height: 40px; }
+      100% { height: 20px; }
+    }
+    .speaking .indicator:nth-child(1) { animation-delay: 0.0s; }
+    .speaking .indicator:nth-child(2) { animation-delay: 0.1s; }
+    .speaking .indicator:nth-child(3) { animation-delay: 0.2s; }
+    .speaking .indicator:nth-child(4) { animation-delay: 0.1s; }
+    .speaking .indicator:nth-child(5) { animation-delay: 0.0s; }
+    .speaking .indicator:nth-child(6) { animation-delay: 0.1s; }
+    .speaking .indicator:nth-child(7) { animation-delay: 0.2s; }
+    .speaking .indicator:nth-child(8) { animation-delay: 0.1s; }
+    .speaking .indicator:nth-child(9) { animation-delay: 0.0s; }
+    
+    #debug-panel {
+      margin-top: 30px;
+      text-align: left;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: none;
+    }
+    #debug-toggle {
+      margin-top: 20px;
+      background: none;
+      border: 1px solid #999;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    #energy-meter {
+      width: 100%;
+      height: 20px;
+      background-color: #ddd;
+      margin-top: 10px;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    #energy-value {
+      height: 100%;
+      width: 0;
+      background-color: #4CAF50;
+      position: absolute;
+      transition: width 0.1s;
+    }
+    
+    #threshold-marker {
+      height: 100%;
+      width: 2px;
+      background-color: red;
+      position: absolute;
+      transition: left 0.5s;
+    }
+    
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin: 0 10px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    
+    #modes {
+      display: flex;
+      justify-content: space-between;
+      width: 200px;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
   <h1>Talk to Maya</h1>
-  <button id="btn">Hold to Talk</button>
+  
+  <div class="mode-toggle">
+    <div id="modes">
+      <span>Push to Talk</span>
+      <label class="switch">
+        <input type="checkbox" id="mode-toggle">
+        <span class="slider"></span>
+      </label>
+      <span>Auto Detect</span>
+    </div>
+  </div>
+  
+  <div id="push-to-talk" class="btn-container">
+    <div class="pulse"></div>
+    <button id="btn" class="btn">Hold to Talk</button>
+  </div>
+  
+  <div id="auto-detect" class="btn-container" style="display: none;">
+    <div class="pulse"></div>
+    <button id="auto-btn" class="btn">Listening...</button>
+  </div>
+  
   <p id="status">Initializing...</p>
   
+  <div id="audio-indicators">
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+    <div class="indicator"></div>
+  </div>
+  
+  <button id="debug-toggle">Show Debug Info</button>
+  <div id="debug-panel">
+    <p id="buffer-info">Buffer size: 0s</p>
+    <p id="latency-info">Latency: 0ms</p>
+    <p id="chunks-info">Chunks in queue: 0</p>
+    
+    <h3>Voice Detection</h3>
+    <div id="energy-meter">
+      <div id="energy-value"></div>
+      <div id="threshold-marker"></div>
+    </div>
+    <p id="vad-status">Voice detected: No</p>
+  </div>
+  
+  <script src="voice-detection.js"></script>
   <script src="/client.js"></script>
+  <script>
+    // Add visual feedback for the debug panel
+    const debugToggle = document.getElementById('debug-toggle');
+    const debugPanel = document.getElementById('debug-panel');
+    const modeToggle = document.getElementById('mode-toggle');
+    const pushToTalkDiv = document.getElementById('push-to-talk');
+    const autoDetectDiv = document.getElementById('auto-detect');
+    
+    debugToggle.addEventListener('click', () => {
+      if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
+        debugPanel.style.display = 'block';
+        debugToggle.textContent = 'Hide Debug Info';
+      } else {
+        debugPanel.style.display = 'none';
+        debugToggle.textContent = 'Show Debug Info';
+      }
+    });
+    
+    // Mode switching
+    modeToggle.addEventListener('change', () => {
+      if (modeToggle.checked) {
+        // Auto detect mode
+        pushToTalkDiv.style.display = 'none';
+        autoDetectDiv.style.display = 'block';
+        if (window.startAutoDetection) {
+          window.startAutoDetection();
+        }
+      } else {
+        // Push to talk mode
+        pushToTalkDiv.style.display = 'block';
+        autoDetectDiv.style.display = 'none';
+        if (window.stopAutoDetection) {
+          window.stopAutoDetection();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
