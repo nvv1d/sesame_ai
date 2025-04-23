@@ -68,6 +68,11 @@ async def read_index():
 async def read_js():
     return FileResponse("static/client.js")
 
+# Add route for voice-detection.js
+@app.get("/voice-detection.js")
+async def read_voice_detection_js():
+    return FileResponse("static/voice-detection.js")
+
 # ─── WebSocket Proxy ──────────────────────────────────────────────────────────
 @app.websocket("/ws/")
 async def ws_proxy(ws: WebSocket):
