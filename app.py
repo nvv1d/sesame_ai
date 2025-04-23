@@ -1,6 +1,7 @@
 import os
 import asyncio
-from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sesame_ai import SesameAI, TokenManager, SesameWebSocket
@@ -16,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Initialize the API client and token manager in a more robust way
+# Initialize the API client and token manager
 client = None
 token_manager = None
 id_token = None
@@ -50,8 +51,18 @@ def initialize_sesame():
         print(f"Failed to initialize Sesame: {e}")
         return False
 
-# Serve static files with correct index.html
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# IMPORTANT: Mount static files to a non-root path
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Serve index.html at the root
+@app.get("/")
+async def read_index():
+    return FileResponse("static/index.html")
+
+# Serve client.js
+@app.get("/client.js")
+async def read_js():
+    return FileResponse("static/client.js")
 
 # ─── WebSocket Proxy ──────────────────────────────────────────────────────────
 @app.websocket("/ws/")
