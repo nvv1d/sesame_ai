@@ -22,6 +22,10 @@ client = None
 token_manager = None
 id_token = None
 
+# Audio streaming settings
+CHUNK_AGGREGATION_SIZE = 3  # Number of chunks to aggregate before sending
+MAX_QUEUE_SIZE = 25  # Maximum number of chunks to keep in queue
+
 def initialize_sesame():
     global client, token_manager, id_token
     try:
@@ -81,18 +85,24 @@ async def ws_proxy(ws: WebSocket):
     # Create SesameWebSocket for this connection
     s_ws = None
     try:
+        # Create a session-specific queue for audio chunks
+        audio_queue = asyncio.Queue(maxsize=MAX_QUEUE_SIZE)
+        
+        # Connect to Sesame with Maya character
         s_ws = SesameWebSocket(id_token=id_token, character="Maya")
         s_ws.connect()
         print("Connected to Sesame WebSocket")
         
         # Set up audio reception task from client
         audio_task = asyncio.create_task(handle_client_audio(ws, s_ws))
-        # Set up audio sending task to client
-        response_task = asyncio.create_task(send_sesame_responses(ws, s_ws))
+        # Set up audio sending task to client with improved buffering
+        response_task = asyncio.create_task(send_sesame_responses(ws, s_ws, audio_queue))
+        # Set up audio processing task
+        processing_task = asyncio.create_task(process_audio_chunks(s_ws, audio_queue))
         
-        # Wait for either task to complete
+        # Wait for any task to complete
         done, pending = await asyncio.wait(
-            [audio_task, response_task],
+            [audio_task, response_task, processing_task],
             return_when=asyncio.FIRST_COMPLETED
         )
         
@@ -122,17 +132,70 @@ async def handle_client_audio(ws: WebSocket, s_ws: SesameWebSocket):
         print(f"Error receiving client audio: {e}")
 
 
-async def send_sesame_responses(ws: WebSocket, s_ws: SesameWebSocket):
-    """Stream audio chunks from Sesame back to the client"""
+async def process_audio_chunks(s_ws: SesameWebSocket, audio_queue: asyncio.Queue):
+    """Process audio chunks from Sesame and put them in the queue"""
     try:
+        buffer = bytearray()
+        chunks_collected = 0
+        
         while True:
             # Get next audio chunk from Sesame (with timeout)
-            chunk = s_ws.get_next_audio_chunk(timeout=0.1)
+            chunk = s_ws.get_next_audio_chunk(timeout=0.05)
+            
             if chunk:
+                # Add to buffer
+                buffer.extend(chunk)
+                chunks_collected += 1
+                
+                # Once we've collected enough chunks, add to queue
+                if chunks_collected >= CHUNK_AGGREGATION_SIZE:
+                    # If queue is full, remove oldest item
+                    if audio_queue.full():
+                        try:
+                            audio_queue.get_nowait()
+                            print("Dropped old audio chunk due to full queue")
+                        except asyncio.QueueEmpty:
+                            pass
+                    
+                    try:
+                        # Put aggregated chunks in queue
+                        await audio_queue.put(bytes(buffer))
+                        buffer = bytearray()
+                        chunks_collected = 0
+                    except asyncio.QueueFull:
+                        print("Queue full, dropping chunk")
+            else:
+                # If buffer has content but we haven't got enough chunks for a while,
+                # send what we have
+                if buffer and chunks_collected > 0:
+                    chunks_collected += 1
+                    if chunks_collected >= CHUNK_AGGREGATION_SIZE or await asyncio.sleep(0.1):
+                        try:
+                            await audio_queue.put(bytes(buffer))
+                            buffer = bytearray()
+                            chunks_collected = 0
+                        except asyncio.QueueFull:
+                            print("Queue full, dropping chunk")
+                
+                # Small sleep to prevent CPU spin
+                await asyncio.sleep(0.01)
+    except Exception as e:
+        print(f"Error processing audio chunks: {e}")
+
+
+async def send_sesame_responses(ws: WebSocket, s_ws: SesameWebSocket, audio_queue: asyncio.Queue):
+    """Stream audio chunks from queue to the client"""
+    try:
+        while True:
+            try:
+                # Get audio chunk from queue
+                chunk = await audio_queue.get()
                 # Send to browser client
                 await ws.send_bytes(chunk)
-            else:
-                # Small sleep to prevent CPU spin
+                # Mark task as done
+                audio_queue.task_done()
+            except Exception as e:
+                print(f"Error sending audio chunk: {e}")
                 await asyncio.sleep(0.01)
     except Exception as e:
         print(f"Error sending Sesame responses: {e}")
